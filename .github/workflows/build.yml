@@ -1,0 +1,46 @@
+name: Build TheFrequencyMan
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    name: Build VST3 on macOS
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Download JUCE 5.4.7
+      run: |
+        curl -L https://github.com/juce-framework/JUCE/archive/refs/tags/5.4.7.zip -o JUCE.zip
+        unzip JUCE.zip
+
+    - name: Copy plugin source into JUCE structure
+      run: |
+        cp -R Source JUCE-5.4.7/examples/Plugin%20Host/Source/Plugin  # ruta ejemplo, ajusta si hace falta
+
+    - name: Generate Xcode project with Projucer
+      run: |
+        JUCE-5.4.7/extras/Projucer/Builds/MacOSX/build/Debug/Projucer.app/Contents/MacOS/Projucer \
+          --resave JUCE-5.4.7/examples/Plugin\ Host/PluginHost.jucer \
+          --export xcode_mac
+
+    - name: Build in Xcode (Release)
+      run: |
+        xcodebuild -project JUCE-5.4.7/examples/Plugin\ Host/Builds/MacOSX/PluginHost.xcodeproj \
+                   -scheme TheFrequencyMan\ \(macOS\ VST3\) \
+                   -configuration Release \
+                   BUILD_DIR=build
+
+    - name: Package into ZIP
+      run: |
+        mkdir out
+        cp build/Release/TheFrequencyMan.vst3 out/
+        zip -r out/TheFrequencyMan-v1.0.zip out/
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: TheFrequencyMan-v1.0
+        path: out/TheFrequencyMan-v1.0.zip
