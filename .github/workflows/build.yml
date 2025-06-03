@@ -18,7 +18,7 @@ jobs:
 
     - name: Copy plugin source into JUCE structure
       run: |
-        cp -R Source JUCE-5.4.7/examples/Plugin%20Host/Source/Plugin  # ruta ejemplo, ajusta si hace falta
+        cp -R Source "JUCE-5.4.7/examples/Plugin Host/Source/Plugin"  # ruta ejemplo, ajusta si hace falta
 
     - name: Generate Xcode project with Projucer
       run: |
